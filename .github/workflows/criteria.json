@@ -1,0 +1,69 @@
+{
+  "name": "SauceDemo Mobile Autotests",
+  "total_score": 100,
+  "criteria": [
+    {
+      "name": "Покрытие тест-кейсов",
+      "description": "Реализовано ≥80% из предложенных мобильных кейсов",
+      "points": 30,
+      "type": "ratio",
+      "metric": "tests_passed",
+      "threshold": 0.8
+    },
+    {
+      "name": "Корректная эмуляция устройств",
+      "description": "Используются playwright.devices, а не хардкод вьюпорта",
+      "points": 20,
+      "type": "static_analysis",
+      "check": {
+        "file_pattern": "tests/**/*.py",
+        "must_contain": ["playwright.devices", "new_context(**"],
+        "must_not_contain": ["viewport={\"width\": 375"]
+      }
+    },
+    {
+      "name": "Работа с тач-событиями",
+      "description": "tap() вместо click() для мобильных сценариев",
+      "points": 15,
+      "type": "static_analysis",
+      "check": {
+        "file_pattern": "tests/test_touch.py",
+        "must_contain": [".tap()"],
+        "ratio_metric": "tap_vs_click",
+        "min_ratio": 0.7
+      }
+    },
+    {
+      "name": "Page Object Model",
+      "description": "Чистое разделение: pages/, tests/, config/",
+      "points": 15,
+      "type": "structure",
+      "required_dirs": ["pages/", "config/", "tests/"],
+      "required_files": ["pages/base_page.py", "conftest.py"]
+    },
+    {
+      "name": "Качество кода (flake8)",
+      "description": "Отсутствие критических ошибок линтера",
+      "points": 10,
+      "type": "linter",
+      "command": "flake8 . --statistics",
+      "max_errors": 0,
+      "max_warnings": 5
+    },
+    {
+      "name": "Артефакты и отчётность",
+      "description": "Скриншоты/видео с префиксом устройства, Allure-отчёт",
+      "points": 10,
+      "type": "artifacts",
+      "required_patterns": [
+        "output/mobile_screenshots/*_iPhone*.png",
+        "output/allure-results/*.json"
+      ]
+    }
+  ],
+  "feedback": {
+    "pass_message": "🎉 Отлично! Проект соответствует требованиям мобильного тестирования.",
+    "fail_message": "❌ Проект требует доработки. Проверьте комментарии к критериям.",
+    "detailed_feedback": true
+  }
+}
