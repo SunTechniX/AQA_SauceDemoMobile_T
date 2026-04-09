@@ -1,0 +1,147 @@
+name: 🧪 CI: Playwright Mobile Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:  # ручной запуск
+
+# Отменяем предыдущие запуски при новом пуше
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: 🔍 Lint & Static Analysis
+    runs-on: ubuntu-22.04  # стабильная версия для образовательных задач
+    timeout-minutes: 10
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[lint]"
+      
+      - name: Run flake8
+        run: flake8 . --statistics --count
+      
+      - name: Check imports with isort
+        run: isort . --check-only --diff
+
+  test:
+    name: 📱 Mobile Tests (${{ matrix.device }})
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        device: [iPhone-14-Pro, Pixel-7]
+        # Можно добавить: iPad-Mini, Galaxy-S22-Ultra
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+      
+      - name: Install Playwright browsers
+        run: playwright install chromium --with-deps
+      
+      - name: Run Playwright tests
+        run: |
+          pytest tests/ \
+            -m mobile \
+            -k "${{ matrix.device }}" \
+            --browser chromium \
+            --video=on \
+            --screenshot=on \
+            --alluredir=output/allure-results \
+            --html=output/report-${{ matrix.device }}.html \
+            -n 2  # параллельно 2 теста
+      
+      - name: Upload test artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifacts-${{ matrix.device }}
+          path: |
+            output/mobile_screenshots/
+            output/videos/
+            output/report-*.html
+          retention-days: 7
+      
+      - name: Upload Allure results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results-${{ matrix.device }}
+          path: output/allure-results/
+          retention-days: 1
+          overwrite: true
+
+  allure-report:
+    name: 📊 Generate Allure Report
+    runs-on: ubuntu-22.04
+    needs: test
+    if: always()
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Download Allure results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: allure-results-*
+          path: output/allure-results/
+          merge-multiple: true
+      
+      - name: Generate Allure report
+        uses: simple-elf/allure-report-action@master
+        with:
+          allure_results: output/allure-results
+          allure_report: output/allure-report
+          allure_history: output/allure-history
+      
+      - name: Upload Allure report
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-report
+          path: output/allure-report/
+          retention-days: 7
+
+  summary:
+    name: 📋 Test Summary
+    runs-on: ubuntu-22.04
+    needs: [lint, test]
+    if: always()
+    
+    steps:
+      - name: Check job statuses
+        run: |
+          echo "## 📊 Результаты прогона" >> $GITHUB_STEP_SUMMARY
+          echo "- 🔍 Lint: ${{ needs.lint.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- 📱 Tests: ${{ needs.test.result }}" >> $GITHUB_STEP_SUMMARY
+          
+          if [[ "${{ needs.test.result }}" == "success" ]]; then
+            echo "✅ Все мобильные тесты пройдены!" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Некоторые тесты упали. Проверьте артефакты." >> $GITHUB_STEP_SUMMARY
+          fi
