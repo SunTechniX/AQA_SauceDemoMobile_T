@@ -1,0 +1,49 @@
+[project]
+name = "saucedemo-playwright-mobile"
+version = "1.0.0"
+description = "Мобильное веб-тестирование SauceDemo через Playwright + Python"
+requires-python = ">=3.12"
+dependencies = [
+    "playwright>=1.40.0",
+    "pytest>=7.4.0",
+    "pytest-playwright>=0.4.0",
+    "allure-pytest>=2.13.0",
+    "pytest-xdist>=3.5.0",      # параллельный запуск
+    "pytest-html>=4.1.0",       # HTML-отчёты
+    "python-dotenv>=1.0.0",     # переменные окружения
+]
+
+[project.optional-dependencies]
+lint = [
+    "flake8>=6.1.0",
+    "flake8-black>=0.3.6",
+    "flake8-isort>=6.1.0",
+]
+dev = [
+    "saucedemo-playwright-mobile[lint]",
+    "pytest-cov>=4.1.0",
+]
+
+[tool.pytest.ini_options]
+addopts = [
+    "--alluredir=output/allure-results",
+    "--clean-alluredir",
+    "--video=retain-on-failure",
+    "--screenshot=only-on-failure",
+    "-v",
+]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+markers = [
+    "mobile: мобильные тесты",
+    "e2e: сквозные сценарии",
+    "responsive: проверка адаптивности",
+    "touch: тач-события",
+    "performance: замеры производительности",
+    "slow: медленные тесты (запускать отдельно)",
+]
+
+[tool.playwright]
+browser = ["chromium"]  # можно добавить firefox, webkit

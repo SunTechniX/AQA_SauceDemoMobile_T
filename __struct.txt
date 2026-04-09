@@ -1,0 +1,55 @@
+saucedemo-playwright-mobile/
+├── .github/
+│   ├── workflows/
+│   │   ├── ci.yml                    # Основной пайплайн: lint + test + allure
+│   │   ├── autograding.yml           # Для GitHub Classroom (опционально)
+│   │   └── cache-playwright.yml      # Кэширование браузеров Playwright
+│   ├── criteria.json                 # Критерии оценки для автогрейдера
+│   └── classroom.yml                 # Конфигурация GitHub Classroom
+│
+├── config/
+│   ├── __init__.py
+│   ├── base.py                       # Базовые настройки: URL, таймауты
+│   ├── devices.py                    # Пресеты мобильных устройств
+│   ├── users.py                      # Тестовые пользователи
+│   └── products.py                   # Ожидаемые данные товаров
+│
+├── pages/                            # Page Object Model
+│   ├── __init__.py
+│   ├── base_page.py                  # Базовый класс с мобильными хелперами
+│   ├── login_page.py
+│   ├── inventory_page.py
+│   ├── cart_page.py
+│   ├── checkout_page.py
+│   └── complete_page.py
+│
+├── tests/
+│   ├── __init__.py
+│   ├── conftest.py                   # Фикстуры проекта
+│   ├── test_responsive.py            # TC_RESP_*: адаптивность
+│   ├── test_touch.py                 # TC_TOUCH_*: тач-события
+│   ├── test_performance.py           # TC_PERF_*: производительность
+│   ├── test_cross_device.py          # TC_XDEV_*: кросс-девайс
+│   ├── test_ux_a11y.py               # TC_UX_*: UX и доступность
+│   └── test_e2e_mobile.py            # TC_MOBILE_001: полный сценарий
+│
+├── utils/
+│   ├── __init__.py
+│   ├── assertions.py                 # Кастомные ассерты
+│   ├── mobile_helpers.py             # Хелперы для мобильного тестирования
+│   └── reporter.py                   # Генерация отчётов
+│
+├── output/                           # .gitignore'd: артефакты тестов
+│   ├── mobile_screenshots/
+│   ├── videos/
+│   ├── logs/
+│   └── allure-results/
+│
+├── .flake8                           # Конфигурация линтера
+├── .gitignore
+├── pytest.ini                        # Настройки pytest
+├── pyproject.toml                    # Зависимости и конфиги (современный стандарт)
+├── requirements.txt                  # Для совместимости с pip install -r
+├── README.md                         # Документация проекта
+├── MOBILE_TESTING_GUIDE.md           # Гайд по мобильному тестированию
+└── OFFLINE_INSTALL.md                # Инструкция для оффлайн-сред (опционально)
