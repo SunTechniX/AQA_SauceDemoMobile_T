@@ -1,0 +1,15 @@
+[flake8]
+max-line-length = 99
+exclude = 
+    .git,
+    __pycache__,
+    .venv,
+    output/,
+    .github/
+ignore = 
+    E203,  # пробел перед : (конфликтует с black)
+    W503,  # перенос строки перед оператором
+    E501,  # длина строки (контролируется black)
+max-complexity = 10
+statistics = True
+count = True
